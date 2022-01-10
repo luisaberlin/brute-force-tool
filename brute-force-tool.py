@@ -9,7 +9,6 @@ lowerCase = "abcdefghijklmnopqrstuvwxyz"
 numbers = "0123456789"
 specialCharacters = "!\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"
 pathToCommonPasswordsZipFile = "./10-million-password-list-top-1000000.txt.zip"
-pathToCommonPasswordsFile = "./10-million-password-list-top-1000000.txt"
 
 
 def main():
@@ -26,23 +25,26 @@ def main():
             print(f"Allowed characters: {allowedChars}\n")
             tryRandomPasswords(allowedChars, 4, zipPath)
         case ["lcp"]:
-            tryListOfCommonPasswords(zipPath)
+            tryList(zipPath, pathToCommonPasswordsZipFile)
         case ["d"]:
-            print("d")
+            tryVariationOfGermanAndEnglishWords(zipPath)
         case ["rup"]:
             print("rup")
         case _:
             print("Invalid command. Check out the README.md")
 
-def tryListOfCommonPasswords(zipPath):
-    if not Path(pathToCommonPasswordsFile).is_file():
-        with zipfile.ZipFile(pathToCommonPasswordsZipFile, 'r') as zipRef:
+#def tryVariationOfGermanAndEnglishWords(zipPath):
+
+
+def tryList(zipPath, pathToList):
+    if not Path(pathToList[:-4]).is_file():
+        with zipfile.ZipFile(pathToList, 'r') as zipRef:
             zipRef.extractall("./")
 
     start = time.time()
     result = ""
 
-    file = open(pathToCommonPasswordsFile,'r')
+    file = open(pathToList[:-4],'r')
     while True:
         next_line = file.readline()
 

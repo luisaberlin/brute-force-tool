@@ -38,22 +38,51 @@ def main():
 
 
 def tryVariationOfGermanAndEnglishWords(zipPath):
-    print("Try if any english word matches. That will take approximatly 68s.")
-    tryEnglishWords = threading.Thread(target=tryList(zipPath, pathToEnglishWords), args=(1,))
+    # print("Try if any english word matches. That will take approximatly 180s.")
+    # tryEnglishWords = threading.Thread(target=tryList(zipPath, pathToEnglishWords), args=(1,))
     # tryList(zipPath, pathToEnglishWords)
 
-    print("Try if any german word matches. That will take approximatly 369s.")
-    tryGermanWords = threading.Thread(target=tryList(zipPath, pathToGermanWords), args=(2,))
+    # print("Try if any german word matches. That will take approximatly 1015s.")
+    # tryGermanWords = threading.Thread(target=tryList(zipPath, pathToGermanWords), args=(2,))
     # tryList(zipPath, pathToGermanWords)
 
-    tryEnglishWords.start()
-    tryGermanWords.start()
+    tryEnglishSentences(zipPath)
 
-    for index, thread in enumerate([tryEnglishWords, tryGermanWords]):
-        thread.join()
-        logging.info("Main    : thread %d done", index)
+    # td.join()
 
-    
+
+def tryEnglishSentences(zipPath):
+    subjects = ["i", "you", "he", "she", "it", "it-security", "computerscience", "students", "camera", "loptos", "sun", "vacation"]
+    verbs = ["is", "are", "have", "has", "had", "do", "does", "did", "think", "thinks", "find", "finds", "want", "wants", "love", "eat", "like", "likes"]
+    objects = ["banana", "great", "bad", "chocolate", "you", "cool", "yummy", "green", "tiered"]
+
+    start = time.time()
+    result = ""
+
+    for subject in subjects:
+        for verb in verbs:
+            for object in objects:
+                lowerCasePw = subject + verb + object
+                upperCasePw = subject.capitalize() + verb.capitalize() + object.capitalize()
+                print(lowerCasePw + "\n" + upperCasePw)
+                if validPassword(zipPath, lowerCasePw):
+                    result = lowerCasePw
+                    break
+                if validPassword(zipPath, upperCasePw):
+                    result = upperCasePw
+                    break
+
+    end = time.time()
+
+    if result:
+        print(f"The password is '{result}'.")
+        print(f"It took {end - start}s to find the password.")
+        sys.exit()
+    else:
+        print("No password found.")
+        print(f"It took {end - start}s.")
+
+                
 
 
 def tryList(zipPath, pathToList):
@@ -130,3 +159,10 @@ def validPassword(zipPath, password):
 
 if __name__ == "__main__":
     main()
+
+
+# Todos
+# - Treading
+# - Function that runs all methods
+# - Something that shows how long the program is running alreday
+# - Random passwords: add min and max length

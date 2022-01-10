@@ -9,6 +9,8 @@ lowerCase = "abcdefghijklmnopqrstuvwxyz"
 numbers = "0123456789"
 specialCharacters = "!\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"
 pathToCommonPasswordsZipFile = "./10-million-password-list-top-1000000.txt.zip"
+pathToGermanWords = "./german-words.txt.zip"
+pathToEnglishWords = "./english-words.txt.zip"
 
 
 def main():
@@ -33,7 +35,11 @@ def main():
         case _:
             print("Invalid command. Check out the README.md")
 
-#def tryVariationOfGermanAndEnglishWords(zipPath):
+def tryVariationOfGermanAndEnglishWords(zipPath):
+    print("Try if any english word matches. That will take approximatly 68s.")
+    tryList(zipPath, pathToEnglishWords)
+    print("Try if any german word matches. That will take approximatly 369s.")
+    tryList(zipPath, pathToGermanWords)
 
 
 def tryList(zipPath, pathToList):

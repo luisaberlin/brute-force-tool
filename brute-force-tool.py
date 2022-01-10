@@ -17,8 +17,7 @@ def main():
     if not Path(zipPath).is_file():
         print(f"The file '{zipPath}' does not exist.")
         sys.exit()
-    print(Path(zipPath).stem)
-    if Path(f"./{Path(zipPath).stem}").is_file:
+    if Path(Path(zipPath).stem).is_file():
         print(f"The file '{zipPath}' is already unzipped.\n")
 
     match sys.argv[2:]:

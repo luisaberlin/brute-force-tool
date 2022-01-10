@@ -3,6 +3,7 @@ import sys
 import zipfile
 from pathlib import Path
 import time
+import threading
 
 upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 lowerCase = "abcdefghijklmnopqrstuvwxyz"
@@ -35,11 +36,24 @@ def main():
         case _:
             print("Invalid command. Check out the README.md")
 
+
 def tryVariationOfGermanAndEnglishWords(zipPath):
     print("Try if any english word matches. That will take approximatly 68s.")
-    tryList(zipPath, pathToEnglishWords)
+    tryEnglishWords = threading.Thread(target=tryList(zipPath, pathToEnglishWords), args=(1,))
+    # tryList(zipPath, pathToEnglishWords)
+
     print("Try if any german word matches. That will take approximatly 369s.")
-    tryList(zipPath, pathToGermanWords)
+    tryGermanWords = threading.Thread(target=tryList(zipPath, pathToGermanWords), args=(2,))
+    # tryList(zipPath, pathToGermanWords)
+
+    tryEnglishWords.start()
+    tryGermanWords.start()
+
+    for index, thread in enumerate([tryEnglishWords, tryGermanWords]):
+        thread.join()
+        logging.info("Main    : thread %d done", index)
+
+    
 
 
 def tryList(zipPath, pathToList):
@@ -68,6 +82,8 @@ def tryList(zipPath, pathToList):
     else:
         print(f"The password is '{result}'.")
         print(f"It took {end - start}s to find the password.")
+        sys.exit()
+
 
     
 
@@ -83,6 +99,7 @@ def tryRandomPasswords(chars, length, zipPath):
     end = time.time()
     print(f"The password is '{randomPw}'.")
     print(f"It took {end - start}s to find the password.")
+    sys.exit()
 
 
 def getAllowedChars(characters): 
@@ -104,6 +121,8 @@ def validPassword(zipPath, password):
         except RuntimeError:
             return False
         except zipfile.BadZipFile: # weird error, that somethimes comes up
+            return False
+        except zipfile.zlib.error: # another weird error, that somethimes comes up
             return False
         else:
             return True

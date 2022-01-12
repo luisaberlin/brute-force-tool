@@ -5,7 +5,7 @@ Requires at least Python 3.10
 `python3 brute-force-tool.py <pathToZipFile> <action> <option>`
 
 e.g.  
-`python3 brute-force-tool.py ./ZipFiles/5.zip rp uls`
+`python3 brute-force-tool.py ./ZipFiles/5.zip rp uls 5 8`
 
 ## Actions
 * `rp`   Try random variations of characters. This command requires a second parameter to set the allowed characters e.g. ul for upper- and lowercase, and requires a 3rd (min length) and a 4th (max length).  

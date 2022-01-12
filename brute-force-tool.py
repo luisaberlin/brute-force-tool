@@ -1,5 +1,4 @@
-from itertools import combinations_with_replacement
-import random
+from itertools import combinations_with_replacement, product
 import sys
 import zipfile
 from pathlib import Path
@@ -126,7 +125,7 @@ def tryRandomPasswords(zipPath, chars, min, max):
         print(f"Try combinations where every charecter appears {round} time(s). ")
         for i in range(int(min), int(max)+1):
             print(f"    Try combinations with length of {i}")
-            for randomCombination in (combinations_with_replacement(chars, i)):
+            for randomCombination in (product(chars, repeat=i)):
                 randomPw = "".join(randomCombination)
                 if validPassword(zipPath, randomPw):
                     end = time.time()
@@ -136,7 +135,6 @@ def tryRandomPasswords(zipPath, chars, min, max):
 
         chars += chars
         round += 1
-
     
 
 

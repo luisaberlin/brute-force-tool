@@ -1,3 +1,4 @@
+from itertools import combinations_with_replacement
 import random
 import sys
 import zipfile
@@ -23,10 +24,10 @@ def main():
         print(f"The file '{zipPath}' is already unzipped.\n")
 
     match sys.argv[2:]:
-        case ["rp", characters]:
+        case ["rp", characters, minLength, maxLength]:
             allowedChars = getAllowedChars(characters)
             print(f"Allowed characters: {allowedChars}\n")
-            tryRandomPasswords(allowedChars, 4, zipPath)
+            tryRandomPasswords(zipPath, allowedChars, minLength, maxLength)
         case ["lcp"]:
             tryList(zipPath, pathToCommonPasswordsZipFile)
         case ["d"]:
@@ -117,18 +118,26 @@ def tryList(zipPath, pathToList):
     
 
 
-def tryRandomPasswords(chars, length, zipPath):
+def tryRandomPasswords(zipPath, chars, min, max):
     start = time.time()
 
+    round = 1
     while True:
-        randomCharsArray = random.choices(chars, k=length)
-        randomPw = "".join(randomCharsArray)
-        if validPassword(zipPath, randomPw): break
+        print(f"Try combinations where every charecter appears {round} time(s). ")
+        for i in range(int(min), int(max)+1):
+            print(f"    Try combinations with length of {i}")
+            for randomCombination in (combinations_with_replacement(chars, i)):
+                randomPw = "".join(randomCombination)
+                if validPassword(zipPath, randomPw):
+                    end = time.time()
+                    print(f"\nThe password is '{randomPw}'.")
+                    print(f"It took {end - start}s to find the password.")
+                    sys.exit()
 
-    end = time.time()
-    print(f"The password is '{randomPw}'.")
-    print(f"It took {end - start}s to find the password.")
-    sys.exit()
+        chars += chars
+        round += 1
+
+    
 
 
 def getAllowedChars(characters): 

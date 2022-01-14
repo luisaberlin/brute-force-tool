@@ -1,19 +1,19 @@
-from itertools import combinations_with_replacement, product
+from itertools import product
 import sys
 import zipfile
 from pathlib import Path
 import time
-import threading
+from multiprocessing import Process
 
 upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 lowerCase = "abcdefghijklmnopqrstuvwxyz"
 numbers = "0123456789"
-specialCharacters = "!\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"
+# specialCharacters = "!#$%&'()*+,-./:;<=>?@[\]^_{|}~"
+specialCharacters = "!#$%&*+,-.:;<=>?@"
 pathToCommonPasswordsZipFile = "./10-million-password-list-top-1000000.txt.zip"
 pathToGermanWords = "./german-words.txt.zip"
 pathToEnglishWords = "./english-words.txt.zip"
-
-
+  
 def main():
     zipPath = sys.argv[1] if len(sys.argv) > 1  else ""
     if not Path(zipPath).is_file():
@@ -28,27 +28,36 @@ def main():
             print(f"Allowed characters: {allowedChars}\n")
             tryRandomPasswords(zipPath, allowedChars, minLength, maxLength)
         case ["lcp"]:
-            tryList(zipPath, pathToCommonPasswordsZipFile)
+            tryList(zipPath, pathToCommonPasswordsZipFile, False)
         case ["d"]:
             tryVariationOfGermanAndEnglishWords(zipPath)
         case ["rup"]:
             print("rup")
+        case ["rsn"]:
+            tryLeetSpeak(zipPath)
         case _:
             print("Invalid command. Check out the README.md")
 
 
 def tryVariationOfGermanAndEnglishWords(zipPath):
-    # print("Try if any english word matches. That will take approximatly 180s.")
-    # tryEnglishWords = threading.Thread(target=tryList(zipPath, pathToEnglishWords), args=(1,))
-    # tryList(zipPath, pathToEnglishWords)
+    print("Try if any english word matches. That will take approximatly 180s.")
+    p1 = Process(target=tryEnglishSentences, args=(zipPath, ))
 
-    # print("Try if any german word matches. That will take approximatly 1015s.")
-    # tryGermanWords = threading.Thread(target=tryList(zipPath, pathToGermanWords), args=(2,))
-    # tryList(zipPath, pathToGermanWords)
+    print("Try if any english word matches. That will take approximatly 180s.")
+    p2 = Process(target=tryList, args=(zipPath, pathToEnglishWords, False, ))
 
-    tryEnglishSentences(zipPath)
+    print("Try if any german word matches. That will take approximatly 1015s.")
+    p3 = Process(target=tryList, args=(zipPath, pathToGermanWords, False,))
 
-    # td.join()
+    p1.start()
+    p2.start()
+    p3.start()
+    print("Started processes")
+
+    p1.join()
+    p2.join()
+    p3.join()
+
 
 
 def tryEnglishSentences(zipPath):
@@ -64,7 +73,6 @@ def tryEnglishSentences(zipPath):
             for object in objects:
                 lowerCasePw = subject + verb + object
                 upperCasePw = subject.capitalize() + verb.capitalize() + object.capitalize()
-                print(lowerCasePw + "\n" + upperCasePw)
                 if validPassword(zipPath, lowerCasePw):
                     result = lowerCasePw
                     break
@@ -85,7 +93,7 @@ def tryEnglishSentences(zipPath):
                 
 
 
-def tryList(zipPath, pathToList):
+def tryList(zipPath, pathToList, leetSpeak):
     if not Path(pathToList[:-4]).is_file():
         with zipfile.ZipFile(pathToList, 'r') as zipRef:
             zipRef.extractall("./")
@@ -98,18 +106,24 @@ def tryList(zipPath, pathToList):
         next_line = file.readline()
 
         if not next_line: break
-        if validPassword(zipPath, next_line.strip()): 
-            result = next_line.strip()
+
+        if leetSpeak: 
+            pw = next_line.strip()
+        else:
+            pw = next_line.strip()
+
+        if validPassword(zipPath, pw): 
+            result = pw
             break
 
     file.close()
 
     end = time.time()
     if not result:
-        print("No password matched.")
+        print(f"No password matched. ({pathToList})")
         print(f"It took {end - start}s.")
     else:
-        print(f"The password is '{result}'.")
+        print(f"The password is '{result}'. ({pathToList})")
         print(f"It took {end - start}s to find the password.")
         sys.exit()
 
@@ -149,6 +163,21 @@ def getAllowedChars(characters):
 
     return chars
 
+def tryLeetSpeak(zipPath):
+    print("Try leetspeak with list of common passwords")
+    tryList(zipPath, pathToCommonPasswordsZipFile, True)
+    print("Try leetspeak with list of english words")
+    tryList(zipPath, pathToEnglishWords, True)
+    print("Try leetspeak with list of german")
+    tryList(zipPath, pathToGermanWords, True)
+
+
+
+def applyLeetSpeak(word):
+    lowerCaseWord = word.lower()
+     # return lowerCaseWord.translate(str.maketrans({'a': '@', 'c': '[', 'g': '9', 'i': '1', 'o': '0', 's': '$'}))
+    return lowerCaseWord.translate(str.maketrans({'a': '@', 'c': '(', 'g': '6', 'i': '!', 'o': '0', 's': '$', 'l':'1'}))
+
 
 def validPassword(zipPath, password):
     with zipfile.ZipFile(zipPath) as zf:
@@ -173,3 +202,8 @@ if __name__ == "__main__":
 # - Function that runs all methods
 # - Something that shows how long the program is running alreday
 # - Random passwords: add min and max length
+
+
+# Results
+# 1: 98765
+# 2: admin

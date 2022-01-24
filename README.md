@@ -16,6 +16,8 @@ e.g.
     * `s` Special characters
 * `lcp`  Try passwords of the [list of common passwords](https://github.com/danielmiessler/SecLists/blob/master/Passwords/Common-Credentials/10-million-password-list-top-1000000.txt).
 * `d`  Try variations of words and sentences of the [german](https://gist.github.com/MarvinJWendt/2f4f4154b8ae218600eb091a5706b5f4) and [english](https://github.com/dwyl/english-words/blob/master/words_alpha.zip) dictionary.
-* `rup`  Try passwords, which are already known of the user.
-* `rsn`  Try passwords where letters were replaces by special chars or numbers
+* `ve` Try variations of english words.
+* `vg` Try variations of [german](https://raw.githubusercontent.com/davidak/wortliste/master/wortliste.txt) words.
+* `veg` Try variations of english and [german](https://raw.githubusercontent.com/davidak/wortliste/master/wortliste.txt) words.
+* `ls`  Try passwords where letters were replaces by special chars or numbers (leet speak)
 

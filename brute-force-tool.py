@@ -1,9 +1,11 @@
 from itertools import product
+from os import urandom
 import sys
 import zipfile
 from pathlib import Path
 import time
 from multiprocessing import Process
+import random
 
 upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 lowerCase = "abcdefghijklmnopqrstuvwxyz"
@@ -12,9 +14,12 @@ numbers = "0123456789"
 specialCharacters = "!#$%&*+,-.:;<=>?@"
 pathToCommonPasswordsZipFile = "./10-million-password-list-top-1000000.txt.zip"
 pathToGermanWords = "./german-words.txt.zip"
+pathToGermanWordsSmall = "./german-words-small.txt.zip"
 pathToEnglishWords = "./english-words.txt.zip"
   
 def main():
+    print(f"Python version {sys.version} is running\n\n")
+
     zipPath = sys.argv[1] if len(sys.argv) > 1  else ""
     if not Path(zipPath).is_file():
         print(f"The file '{zipPath}' does not exist.")
@@ -30,24 +35,28 @@ def main():
         case ["lcp"]:
             tryList(zipPath, pathToCommonPasswordsZipFile, False)
         case ["d"]:
-            tryVariationOfGermanAndEnglishWords(zipPath)
-        case ["rup"]:
-            print("rup")
-        case ["rsn"]:
+            tryEnglishAndGermanDictonary(zipPath)
+        case ["ve"]:
+            tryWordCombination(zipPath, pathToEnglishWords)
+        case ["vg"]:
+            tryWordCombination(zipPath, pathToGermanWordsSmall)
+        case ["veg"]:
+            tryWordCombinationTwoLanguages(zipPath, pathToEnglishWords, pathToGermanWordsSmall)
+        case ["ls"]:
             tryLeetSpeak(zipPath)
         case _:
             print("Invalid command. Check out the README.md")
 
 
-def tryVariationOfGermanAndEnglishWords(zipPath):
+def tryEnglishAndGermanDictonary(zipPath):
     print("Try if any english word matches. That will take approximatly 180s.")
     p1 = Process(target=tryEnglishSentences, args=(zipPath, ))
 
     print("Try if any english word matches. That will take approximatly 180s.")
-    p2 = Process(target=tryList, args=(zipPath, pathToEnglishWords, False, ))
+    p2 = Process(target=tryList, args=(zipPath, pathToEnglishWords, False))
 
     print("Try if any german word matches. That will take approximatly 1015s.")
-    p3 = Process(target=tryList, args=(zipPath, pathToGermanWords, False,))
+    p3 = Process(target=tryList, args=(zipPath, pathToGermanWords, False))
 
     p1.start()
     p2.start()
@@ -84,14 +93,11 @@ def tryEnglishSentences(zipPath):
 
     if result:
         print(f"The password is '{result}'.")
-        print(f"It took {end - start}s to find the password.")
+        print(f"It took {end - start}s to find the password. (english sentences)")
         sys.exit()
     else:
         print("No password found.")
-        print(f"It took {end - start}s.")
-
-                
-
+        print(f"It took {end - start}s. (english sentences)")
 
 def tryList(zipPath, pathToList, leetSpeak):
     if not Path(pathToList[:-4]).is_file():
@@ -120,13 +126,91 @@ def tryList(zipPath, pathToList, leetSpeak):
 
     end = time.time()
     if not result:
-        print(f"No password matched. ({pathToList})")
-        print(f"It took {end - start}s.")
+        print(f"No password matched.")
+        print(f"It took {end - start}s. ({pathToList})")
     else:
-        print(f"The password is '{result}'. ({pathToList})")
-        print(f"It took {end - start}s to find the password.")
+        print(f"The password is '{result}'.")
+        print(f"It took {end - start}s to find the password. ({pathToList})")
         sys.exit()
 
+def tryWordCombination(zipPath, pathToList):
+    if not Path(pathToList[:-4]).is_file():
+        with zipfile.ZipFile(pathToList, 'r') as zipRef:
+            zipRef.extractall("./")
+
+    start = time.time()
+    result = ""
+
+    print(f"Open dictonary {pathToList}...")
+    file = open(pathToList[:-4],'r')
+    words = file.readlines()
+    print(f"... that took {time.time() - start} seconds.")
+
+
+    numberOfWords = len(words)-1
+    while True:
+        randomIndices = random.sample(range(0, numberOfWords), 2)
+        pw = words[randomIndices[0]].strip().capitalize() + words[randomIndices[1]].strip().capitalize()
+
+        if validPassword(zipPath, pw): 
+            result = pw
+            break
+
+    file.close()
+
+    end = time.time()
+    print(f"The password is '{result}'.")
+    print(f"It took {end - start}s to find the password. ({pathToList})")
+    sys.exit()
+
+def tryWordCombinationTwoLanguages(zipPath, pathToList1, pathToList2):
+    if not Path(pathToList1[:-4]).is_file():
+        with zipfile.ZipFile(pathToList1, 'r') as zipRef:
+            zipRef.extractall("./")
+    if not Path(pathToList2[:-4]).is_file():
+        with zipfile.ZipFile(pathToList1, 'r') as zipRef:
+            zipRef.extractall("./")
+
+    start = time.time()
+    result = ""
+
+    print(f"Open dictonary {pathToList1}...")
+    file1 = open(pathToList1[:-4],'r')
+    words1 = file1.readlines()
+    print(f"... that took {time.time() - start} seconds.")
+
+    print(f"Open dictonary {pathToList2}...")
+    file2 = open(pathToList2[:-4],'r')
+    words2 = file2.readlines()
+    print(f"... that took {time.time() - start} seconds.")
+
+
+    numberOfWords1 = len(words1)-1
+    numberOfWords2 = len(words2)-1
+    while True:
+        randomIndex1 = random.randint(0, numberOfWords1)
+        randomIndex2 = random.randint(0, numberOfWords2)
+        randomWord1 =  words1[randomIndex1].strip().capitalize()
+        randomWord2 =  words2[randomIndex2].strip().capitalize()
+
+        if random.randint(0, 1) == 0:
+            pw = randomWord1 + randomWord2
+        else:
+            pw = randomWord2 + randomWord1
+            
+        print(pw)
+
+        if validPassword(zipPath, pw): 
+            result = pw
+            break
+
+    file1.close()
+    file2.close()
+
+    end = time.time()
+    print(f"The password is '{result}'.")
+    print(f"It took {end - start}s to find the password.")
+    sys.exit()
 
     
 
@@ -165,18 +249,30 @@ def getAllowedChars(characters):
 
 def tryLeetSpeak(zipPath):
     print("Try leetspeak with list of common passwords")
-    tryList(zipPath, pathToCommonPasswordsZipFile, True)
-    print("Try leetspeak with list of english words")
-    tryList(zipPath, pathToEnglishWords, True)
+    p1 = Process(target=tryList, args=(zipPath, pathToCommonPasswordsZipFile, True))
+
+    print("Try leetspeak with list of english")
+    p2 = Process(target=tryList, args=(zipPath, pathToEnglishWords, True))
+
     print("Try leetspeak with list of german")
-    tryList(zipPath, pathToGermanWords, True)
+    # p3 = Process(target=tryList, args=(zipPath, pathToGermanWords, True))
+    p3 = Process(target=tryList, args=(zipPath, pathToGermanWordsSmall, True))
+
+    p1.start()
+    p2.start()
+    p3.start()
+    print("Started processes")
+
+    p1.join()
+    p2.join()
+    p3.join()
 
 
 
 def applyLeetSpeak(word):
     lowerCaseWord = word.lower()
-     # return lowerCaseWord.translate(str.maketrans({'a': '@', 'c': '[', 'g': '9', 'i': '1', 'o': '0', 's': '$'}))
-    return lowerCaseWord.translate(str.maketrans({'a': '@', 'c': '(', 'g': '6', 'i': '!', 'o': '0', 's': '$', 'l':'1'}))
+    # return lowerCaseWord.translate(str.maketrans({'a': '@', 'c': '(', 'g': '6', 'i': '!', 'o': '0', 's': '$', 'l':'1'})) # veriation 1
+    return lowerCaseWord.translate(str.maketrans({'a': '@', 'c': '[', 'g': '9', 'i': '1', 'o': '0', 's': '$'}))  # variation 2
 
 
 def validPassword(zipPath, password):
@@ -197,13 +293,40 @@ if __name__ == "__main__":
     main()
 
 
-# Todos
-# - Treading
-# - Function that runs all methods
-# - Something that shows how long the program is running alreday
-# - Random passwords: add min and max length
-
-
 # Results
 # 1: 98765
 # 2: admin
+
+# Tested: 
+
+# +++ zip4 +++
+# Random
+    # where every charecter appears 1 time(s). Try combinations with length of 4
+# Leet Speek
+    # variation 1 X
+    # variation 2 X
+# Dictonary
+    # english: 
+    # german:
+    # english sentences: 
+# Variation of Words
+    # english:
+    # german:
+    # english/german:
+
+# +++ zip3 +++
+# Random
+# Leet Speek
+    # variation 1
+        # english-words: No password matched. It took 317.59994101524353s.
+    # variation 2
+# Dictonary
+    # english: 
+    # german:
+    # english sentences: 
+# Variation of Words
+    # english:
+    # german:
+    # english/german:
+
+# Try List with CPU: It took 554.4357798099518s. 

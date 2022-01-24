@@ -1,11 +1,10 @@
 from itertools import product
-from os import urandom
-import sys
-import zipfile
+from sys import version, argv, exit
+from zipfile import ZipFile, BadZipFile, zlib
 from pathlib import Path
-import time
+from time import time
 from multiprocessing import Process
-import random
+from random import randint, sample
 
 upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 lowerCase = "abcdefghijklmnopqrstuvwxyz"
@@ -18,34 +17,34 @@ pathToGermanWordsSmall = "./german-words-small.txt.zip"
 pathToEnglishWords = "./english-words.txt.zip"
   
 def main():
-    print(f"Python version: {sys.version}\n")
+    print(f"Python version: {version}\n")
 
-    zipPath = sys.argv[1] if len(sys.argv) > 1  else ""
+    zipPath = argv[1] if len(argv) > 1  else ""
     if not Path(zipPath).is_file():
         print(f"The file '{zipPath}' does not exist.")
-        sys.exit()
+        exit()
     if Path(Path(zipPath).stem).is_file():
         print(f"The file '{zipPath}' is already unzipped.\n")
 
-    if sys.argv[2] == "rp":
-        if len(sys.argv) != 6:
+    if argv[2] == "rp":
+        if len(argv) != 6:
             print("Invalid command. Read the README.md.")
-            sys.exit()
-        characters, minLength, maxLength = sys.argv[3], sys.argv[4], sys.argv[5] 
+            exit()
+        characters, minLength, maxLength = argv[3], argv[4], argv[5] 
         allowedChars = getAllowedChars(characters)
         print(f"Allowed characters: {allowedChars}\n")
         tryRandomPasswords(zipPath, allowedChars, minLength, maxLength)
-    elif sys.argv[2] == "lcp":
+    elif argv[2] == "lcp":
         tryList(zipPath, pathToCommonPasswordsZipFile, False)
-    elif sys.argv[2] == "d":
+    elif argv[2] == "d":
         tryEnglishAndGermanDictonary(zipPath)
-    elif sys.argv[2] == "ve":
+    elif argv[2] == "ve":
         tryWordCombination(zipPath, pathToEnglishWords)
-    elif sys.argv[2] == "vg":
+    elif argv[2] == "vg":
         tryWordCombination(zipPath, pathToGermanWordsSmall)
-    elif sys.argv[2] == "veg":
+    elif argv[2] == "veg":
         tryWordCombinationTwoLanguages(zipPath, pathToEnglishWords, pathToGermanWordsSmall)
-    elif sys.argv[2] == "ls":
+    elif argv[2] == "ls":
         tryLeetSpeak(zipPath)
     else:
         print("Invalid command. Read the README.md.")
@@ -77,7 +76,7 @@ def tryEnglishSentences(zipPath):
     verbs = ["is", "are", "have", "has", "had", "do", "does", "did", "think", "thinks", "find", "finds", "want", "wants", "love", "eat", "like", "likes"]
     objects = ["banana", "great", "bad", "chocolate", "you", "cool", "yummy", "green", "tiered"]
 
-    start = time.time()
+    start = time()
     result = ""
 
     for subject in subjects:
@@ -92,22 +91,22 @@ def tryEnglishSentences(zipPath):
                     result = upperCasePw
                     break
 
-    end = time.time()
+    end = time()
 
     if result:
         print(f"The password is '{result}'.")
         print(f"It took {end - start}s to find the password. (english sentences)")
-        sys.exit()
+        exit()
     else:
         print("No password found.")
         print(f"It took {end - start}s. (english sentences)")
 
 def tryList(zipPath, pathToList, leetSpeak):
     if not Path(pathToList[:-4]).is_file():
-        with zipfile.ZipFile(pathToList, 'r') as zipRef:
+        with ZipFile(pathToList, 'r') as zipRef:
             zipRef.extractall("./")
 
-    start = time.time()
+    start = time()
     result = ""
 
     file = open(pathToList[:-4],'r')
@@ -127,32 +126,32 @@ def tryList(zipPath, pathToList, leetSpeak):
 
     file.close()
 
-    end = time.time()
+    end = time()
     if not result:
         print(f"No password matched.")
         print(f"It took {end - start}s. ({pathToList})")
     else:
         print(f"The password is '{result}'.")
         print(f"It took {end - start}s to find the password. ({pathToList})")
-        sys.exit()
+        exit()
 
 def tryWordCombination(zipPath, pathToList):
     if not Path(pathToList[:-4]).is_file():
-        with zipfile.ZipFile(pathToList, 'r') as zipRef:
+        with ZipFile(pathToList, 'r') as zipRef:
             zipRef.extractall("./")
 
-    start = time.time()
+    start = time()
     result = ""
 
     print(f"Open dictonary {pathToList}...")
     file = open(pathToList[:-4],'r')
     words = file.readlines()
-    print(f"... that took {time.time() - start} seconds.")
+    print(f"... that took {time() - start} seconds.")
 
 
     numberOfWords = len(words)-1
     while 1:
-        randomIndices = random.sample(range(0, numberOfWords), 2)
+        randomIndices = sample(range(0, numberOfWords), 2)
         pw = words[randomIndices[0]].strip().capitalize() + words[randomIndices[1]].strip().capitalize()
 
         if validPassword(zipPath, pw): 
@@ -161,42 +160,42 @@ def tryWordCombination(zipPath, pathToList):
 
     file.close()
 
-    end = time.time()
+    end = time()
     print(f"The password is '{result}'.")
     print(f"It took {end - start}s to find the password. ({pathToList})")
-    sys.exit()
+    exit()
 
 def tryWordCombinationTwoLanguages(zipPath, pathToList1, pathToList2):
     if not Path(pathToList1[:-4]).is_file():
-        with zipfile.ZipFile(pathToList1, 'r') as zipRef:
+        with ZipFile(pathToList1, 'r') as zipRef:
             zipRef.extractall("./")
     if not Path(pathToList2[:-4]).is_file():
-        with zipfile.ZipFile(pathToList1, 'r') as zipRef:
+        with ZipFile(pathToList1, 'r') as zipRef:
             zipRef.extractall("./")
 
-    start = time.time()
+    start = time()
     result = ""
 
     print(f"Open dictonary {pathToList1}...")
     file1 = open(pathToList1[:-4],'r')
     words1 = file1.readlines()
-    print(f"... that took {time.time() - start} seconds.")
+    print(f"... that took {time() - start} seconds.")
 
     print(f"Open dictonary {pathToList2}...")
     file2 = open(pathToList2[:-4],'r')
     words2 = file2.readlines()
-    print(f"... that took {time.time() - start} seconds.")
+    print(f"... that took {time() - start} seconds.")
 
 
     numberOfWords1 = len(words1)-1
     numberOfWords2 = len(words2)-1
     while 1:
-        randomIndex1 = random.randint(0, numberOfWords1)
-        randomIndex2 = random.randint(0, numberOfWords2)
+        randomIndex1 = randint(0, numberOfWords1)
+        randomIndex2 = randint(0, numberOfWords2)
         randomWord1 =  words1[randomIndex1].strip().capitalize()
         randomWord2 =  words2[randomIndex2].strip().capitalize()
 
-        if random.randint(0, 1) == 0:
+        if randint(0, 1) == 0:
             pw = "".join([randomWord1, randomWord2])
             if validPassword(zipPath, pw): 
                 result = pw
@@ -210,16 +209,16 @@ def tryWordCombinationTwoLanguages(zipPath, pathToList1, pathToList2):
     file1.close()
     file2.close()
 
-    end = time.time()
+    end = time()
     print(f"The password is '{result}'.")
     print(f"It took {end - start}s to find the password.")
-    sys.exit()
+    exit()
 
     
 
 
 def tryRandomPasswords(zipPath, chars, min, max):
-    start = time.time()
+    start = time()
 
     round = 1
     while 1:
@@ -229,10 +228,10 @@ def tryRandomPasswords(zipPath, chars, min, max):
             for randomCombination in (product(chars, repeat=i)):
                 randomPw = "".join(randomCombination)
                 if validPassword(zipPath, randomPw):
-                    end = time.time()
+                    end = time()
                     print(f"\nThe password is '{randomPw}'.")
                     print(f"It took {end - start}s to find the password.")
-                    sys.exit()
+                    exit()
 
         chars += chars
         round += 1
@@ -279,14 +278,14 @@ def applyLeetSpeak(word):
 
 
 def validPassword(zipPath, password):
-    with zipfile.ZipFile(zipPath) as zf:
+    with ZipFile(zipPath) as zf:
         try:
             zf.extractall(pwd=bytes(password,'utf-8'))
         except RuntimeError:
             return False
-        except zipfile.BadZipFile: # weird error, that somethimes comes up
+        except BadZipFile: # weird error, that somethimes comes up
             return False
-        except zipfile.zlib.error: # another weird error, that somethimes comes up
+        except zlib.error: # another weird error, that somethimes comes up
             return False
         else:
             return True

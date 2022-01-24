@@ -18,7 +18,7 @@ pathToGermanWordsSmall = "./german-words-small.txt.zip"
 pathToEnglishWords = "./english-words.txt.zip"
   
 def main():
-    print(f"Python version {sys.version} is running\n\n")
+    print(f"Python version: {sys.version}\n")
 
     zipPath = sys.argv[1] if len(sys.argv) > 1  else ""
     if not Path(zipPath).is_file():
@@ -27,25 +27,29 @@ def main():
     if Path(Path(zipPath).stem).is_file():
         print(f"The file '{zipPath}' is already unzipped.\n")
 
-    match sys.argv[2:]:
-        case ["rp", characters, minLength, maxLength]:
-            allowedChars = getAllowedChars(characters)
-            print(f"Allowed characters: {allowedChars}\n")
-            tryRandomPasswords(zipPath, allowedChars, minLength, maxLength)
-        case ["lcp"]:
-            tryList(zipPath, pathToCommonPasswordsZipFile, False)
-        case ["d"]:
-            tryEnglishAndGermanDictonary(zipPath)
-        case ["ve"]:
-            tryWordCombination(zipPath, pathToEnglishWords)
-        case ["vg"]:
-            tryWordCombination(zipPath, pathToGermanWordsSmall)
-        case ["veg"]:
-            tryWordCombinationTwoLanguages(zipPath, pathToEnglishWords, pathToGermanWordsSmall)
-        case ["ls"]:
-            tryLeetSpeak(zipPath)
-        case _:
-            print("Invalid command. Check out the README.md")
+    if sys.argv[2] == "rp":
+        if len(sys.argv) != 6:
+            print("Invalid command. Read the README.md.")
+            sys.exit()
+        characters, minLength, maxLength = sys.argv[3], sys.argv[4], sys.argv[5] 
+        allowedChars = getAllowedChars(characters)
+        print(f"Allowed characters: {allowedChars}\n")
+        tryRandomPasswords(zipPath, allowedChars, minLength, maxLength)
+    elif sys.argv[2] == "lcp":
+        tryList(zipPath, pathToCommonPasswordsZipFile, False)
+    elif sys.argv[2] == "d":
+        tryEnglishAndGermanDictonary(zipPath)
+    elif sys.argv[2] == "ve":
+        tryWordCombination(zipPath, pathToEnglishWords)
+    elif sys.argv[2] == "vg":
+        tryWordCombination(zipPath, pathToGermanWordsSmall)
+    elif sys.argv[2] == "veg":
+        tryWordCombinationTwoLanguages(zipPath, pathToEnglishWords, pathToGermanWordsSmall)
+    elif sys.argv[2] == "ls":
+        tryLeetSpeak(zipPath)
+    else:
+        print("Invalid command. Read the README.md.")
+
 
 
 def tryEnglishAndGermanDictonary(zipPath):
@@ -68,7 +72,6 @@ def tryEnglishAndGermanDictonary(zipPath):
     p3.join()
 
 
-
 def tryEnglishSentences(zipPath):
     subjects = ["i", "you", "he", "she", "it", "it-security", "computerscience", "students", "camera", "loptos", "sun", "vacation"]
     verbs = ["is", "are", "have", "has", "had", "do", "does", "did", "think", "thinks", "find", "finds", "want", "wants", "love", "eat", "like", "likes"]
@@ -80,8 +83,8 @@ def tryEnglishSentences(zipPath):
     for subject in subjects:
         for verb in verbs:
             for object in objects:
-                lowerCasePw = subject + verb + object
-                upperCasePw = subject.capitalize() + verb.capitalize() + object.capitalize()
+                lowerCasePw = "".join([subject, verb, object]) 
+                upperCasePw = "".join([subject.capitalize(), verb.capitalize(), object.capitalize()])
                 if validPassword(zipPath, lowerCasePw):
                     result = lowerCasePw
                     break
@@ -108,7 +111,7 @@ def tryList(zipPath, pathToList, leetSpeak):
     result = ""
 
     file = open(pathToList[:-4],'r')
-    while True:
+    while 1:
         next_line = file.readline()
 
         if not next_line: break
@@ -148,7 +151,7 @@ def tryWordCombination(zipPath, pathToList):
 
 
     numberOfWords = len(words)-1
-    while True:
+    while 1:
         randomIndices = random.sample(range(0, numberOfWords), 2)
         pw = words[randomIndices[0]].strip().capitalize() + words[randomIndices[1]].strip().capitalize()
 
@@ -187,22 +190,22 @@ def tryWordCombinationTwoLanguages(zipPath, pathToList1, pathToList2):
 
     numberOfWords1 = len(words1)-1
     numberOfWords2 = len(words2)-1
-    while True:
+    while 1:
         randomIndex1 = random.randint(0, numberOfWords1)
         randomIndex2 = random.randint(0, numberOfWords2)
         randomWord1 =  words1[randomIndex1].strip().capitalize()
         randomWord2 =  words2[randomIndex2].strip().capitalize()
 
         if random.randint(0, 1) == 0:
-            pw = randomWord1 + randomWord2
+            pw = "".join([randomWord1, randomWord2])
+            if validPassword(zipPath, pw): 
+                result = pw
+                break
         else:
-            pw = randomWord2 + randomWord1
-            
-        print(pw)
-
-        if validPassword(zipPath, pw): 
-            result = pw
-            break
+            pw = "".join([randomWord2, randomWord1])
+            if validPassword(zipPath, pw): 
+                result = pw
+                break     
 
     file1.close()
     file2.close()
@@ -219,7 +222,7 @@ def tryRandomPasswords(zipPath, chars, min, max):
     start = time.time()
 
     round = 1
-    while True:
+    while 1:
         print(f"Try combinations where every charecter appears {round} time(s). ")
         for i in range(int(min), int(max)+1):
             print(f"    Try combinations with length of {i}")

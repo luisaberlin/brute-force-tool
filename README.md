@@ -7,6 +7,9 @@ Requires at least Python 3.10
 e.g.  
 `python3 brute-force-tool.py ./ZipFiles/5.zip rp uls 5 8`
 
+For a faster runtime use `pypy3` instead of `python3`  
+Install pypy3 with: `brew install pypy3`
+
 ## Actions
 * `rp`   Try random variations of characters. This command requires a second parameter to set the allowed characters e.g. ul for upper- and lowercase, and requires a 3rd (min length) and a 4th (max length).  
     Options:
